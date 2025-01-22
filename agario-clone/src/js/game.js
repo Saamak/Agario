@@ -6,7 +6,7 @@ import CameraManager from './managers/CameraManager.js';
 import CollisionManager from './managers/CollisionManager.js';
 
 class Game {
-    constructor() {
+    constructor(playerCount, nickname) {
         // Canvas setup
         this.canvas = document.getElementById('gameCanvas');
         if (!this.canvas) {
@@ -25,21 +25,23 @@ class Game {
         this.screenMouseX = 0;
         this.screenMouseY = 0;
 
-        // Game elements
-        this.initializeGameElements();
-        
-        // Managers
-        this.cameraManager = new CameraManager(this.canvas, this.worldWidth, this.worldHeight);
-        this.collisionManager = new CollisionManager(this);
-        
-        // Start game
-        this.setupEventListeners();
-        this.gameLoop();
+        // Load AI names and initialize game elements
+        AIPlayer.loadNames().then(() => {
+            this.initializeGameElements(playerCount, nickname);
+            
+            // Managers
+            this.cameraManager = new CameraManager(this.canvas, this.worldWidth, this.worldHeight);
+            this.collisionManager = new CollisionManager(this);
+            
+            // Start game
+            this.setupEventListeners();
+            this.gameLoop();
+        });
     }
 
-    initializeGameElements() {
+    initializeGameElements(playerCount, nickname) {
         // Player
-        this.player = new Player(this.worldWidth/2, this.worldHeight/2, 80);
+        this.player = new Player(this.worldWidth/2, this.worldHeight/2, 100, nickname);
         
         // Food
         const NUM_FOODS = 1000;
@@ -48,7 +50,7 @@ class Game {
         );
         
         // Powers
-        const NUM_POWERS = 10;
+        const NUM_POWERS = 50;
         this.powers = Array(NUM_POWERS).fill().map(() => 
             new Power(this.worldWidth, this.worldHeight)
         );
@@ -69,11 +71,16 @@ class Game {
         this.updateAIPositions(currentTime);
         this.updateFood(currentTime);
         
-        // Check all collisions using CollisionManager
+        // Update projectiles if player can shoot
+        if (this.player.canShoot) {
+            this.player.updateProjectiles();
+        }
+        
+        // Check collisions
         this.collisionManager.checkCollisions();
         
         // Update camera
-        this.cameraManager.update(this.player.x, this.player.y, this.player.score);
+        this.cameraManager.update(this.player.x, this.player.y, this.player.size);
     }
 
     updatePlayerPosition() {
@@ -136,6 +143,11 @@ class Game {
         this.aiPlayers.forEach(ai => ai.draw(this.ctx));
         this.player.draw(this.ctx);
         
+        // Draw projectiles if player can shoot
+        if (this.player.canShoot) {
+            this.player.projectiles.forEach(p => p.draw(this.ctx));
+        }
+        
         this.cameraManager.endDraw();
     }
 
@@ -158,6 +170,17 @@ class Game {
         window.addEventListener('mousemove', (e) => {
             this.screenMouseX = e.clientX;
             this.screenMouseY = e.clientY;
+        });
+
+        // Add space key listener
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && this.player.canShoot) {
+                const worldMouse = this.cameraManager.getWorldCoordinates(
+                    this.screenMouseX,
+                    this.screenMouseY
+                );
+                this.player.shoot(worldMouse.x, worldMouse.y);
+            }
         });
     }
 

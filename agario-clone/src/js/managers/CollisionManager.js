@@ -8,6 +8,21 @@ export default class CollisionManager {
         this.checkPowerCollisions();
         this.checkPlayerAICollisions();
         this.checkAICollisions();
+        this.checkProjectileCollisions(); // Add projectile collision check
+    }
+
+    checkProjectileCollisions() {
+        this.game.player.projectiles.forEach(projectile => {
+            this.game.aiPlayers.forEach(ai => {
+                if (projectile.checkCollision(ai)) {
+                    const projectileDamage = projectile.size * 2;
+                    ai.reduceSize(projectileDamage);
+                    projectile.active = false;
+                }
+            });
+        });
+
+        this.game.player.projectiles = this.game.player.projectiles.filter(p => p.active);
     }
 
     checkFoodCollisions() {
@@ -21,7 +36,6 @@ export default class CollisionManager {
             
             if (distance < this.game.player.size) {
                 food.setRespawnTimer(performance.now());
-                this.game.player.grow(0.5);
                 this.game.player.addScore(1);
                 return true;
             }
@@ -34,7 +48,6 @@ export default class CollisionManager {
                 
                 if (distanceAI < ai.size) {
                     food.setRespawnTimer(performance.now());
-                    ai.grow(0.5);
                     ai.addScore(1);
                     return false;
                 }
@@ -66,9 +79,8 @@ export default class CollisionManager {
                 // Need 20% size advantage to eat
                 if (this.game.player.size > ai.size * 1.2) {
                     // Get 80% of victim's score
-                    const gainedScore = Math.floor(ai.score * 0.8);
-                    this.game.player.addScore(gainedScore);
-                    this.game.player.grow(gainedScore * 0.8);
+                    const gainedSize = Math.floor(ai.size * 0.5);
+                    this.game.player.addScore(ai.score);
                     
                     this.game.deadAIs.push({
                         size: 20,
@@ -95,13 +107,13 @@ export default class CollisionManager {
                     if (ai1.size > ai2.size * 1.2) {
                         // AI1 eats AI2
                         const gainedSize = Math.floor(ai2.size * 0.8);
-                        ai1.grow(gainedSize);
+                        ai1.addScore(ai2.score);
                         this.game.aiPlayers.splice(j, 1);
                         j--;
                     } else if (ai2.size > ai1.size * 1.2) {
                         // AI2 eats AI1
                         const gainedSize = Math.floor(ai1.size * 0.8);
-                        ai2.grow(gainedSize);
+                        ai2.addScore(ai1.score);
                         this.game.aiPlayers.splice(i, 1);
                         i--;
                         break;

@@ -1,6 +1,7 @@
 const PowerType = {
     SPEED: 'speed',
-    SIZE: 'size'
+    SIZE: 'size',
+    SHOOT: 'shoot' // Add new power type
 };
 
 class Power {
@@ -14,25 +15,46 @@ class Power {
         // Properties
         this.size = 35;
         this.active = true;
-        this.type = Math.random() < 0.5 ? PowerType.SPEED : PowerType.SIZE;
-        this.color = this.type === PowerType.SPEED ? '#00FFFF' : '#FF69B4'; // Cyan for speed, Pink for size
+        this.type = this.getRandomType();
+        this.color = this.getColorForType();
         
         // Buff properties
-        this.buffDuration = 3000; // Increase to 3 seconds 
+        this.buffDuration = 3000; // Normal buff duration
+        this.buffDurationShoot = 3000; // Shoot buff duration
         this.speedMultiplier = 1.5; // Lower multiplier for better control
-        this.sizeMultiplier = 1.1;
+        this.sizeMultiplier = 35; // Increase to 50
         
         // Rotation
         this.angle = 0;
         this.rotationSpeed = 0.05; // Radians per frame
 
         // Glow properties
-        this.glowIntensity = 10;
-        this.glowMax = 20;
-        this.glowSpeed = 0.1;
-        this.glowDirection = 1;
+        this.glowIntensity = 50;
+        this.glowMax = 100;
+        this.glowSpeed = 0.9;
+        this.glowDirection = 5;
 
         this.respawnTime = 0;
+
+        // Add shoot properties
+        this.projectiles = [];
+        this.canShoot = false;
+        this.shootCooldown = 300; // Faster shooting while buffed
+        this.lastShootTime = 0;
+    }
+
+    getRandomType() {
+        const types = Object.values(PowerType);
+        return types[Math.floor(Math.random() * types.length)];
+    }
+
+    getColorForType() {
+        switch(this.type) {
+            case PowerType.SPEED: return '#00FFFF';
+            case PowerType.SIZE: return '#FF69B4';
+            case PowerType.SHOOT: return '#FF0000';
+            default: return '#FFFFFF';
+        }
     }
 
     draw(ctx) {
@@ -83,7 +105,28 @@ class Power {
     }
 
     applyEffect(player) {
-        if (this.type === PowerType.SPEED) {
+        if (this.type === PowerType.SHOOT) {
+            // Store original cooldown
+            const originalCooldown = player.shootCooldown;
+            
+            // Enable shooting with faster cooldown
+            player.canShoot = true;
+            player.hasBuff = true;
+            player.buffDuration = this.buffDurationShoot;
+            player.buffEndTime = performance.now() + this.buffDurationShoot;
+            player.shootCooldown = this.shootCooldown;
+            
+            // Reset projectiles array
+            player.projectiles = [];
+            
+            // Disable shooting and restore original cooldown after duration
+            setTimeout(() => {
+                player.canShoot = false;
+                player.hasBuff = false;
+                player.shootCooldown = originalCooldown;
+                player.projectiles = [];
+            }, this.buffDurationShoot);
+        } else if (this.type === PowerType.SPEED) {
             // Store original speeds before applying buff
             const originalMinSpeed = player.minSpeed;
             const originalMaxSpeed = player.maxSpeed;
@@ -101,13 +144,10 @@ class Power {
                 player.maxSpeed = originalMaxSpeed;
                 player.hasBuff = false;
             }, this.buffDuration);
-        } else {
+        } else if (this.type === PowerType.SIZE) {
             // Size buff
-            const growAmount = player.size * (this.sizeMultiplier - 1);
-            player.addScore(Math.floor(growAmount));
-            player.grow(growAmount);
+            player.addScore(Math.floor(this.sizeMultiplier));
         }
     }
 }
-
 export default Power;

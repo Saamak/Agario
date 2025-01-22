@@ -5,7 +5,6 @@ export default class Food {
         this.worldWidth = worldWidth;
         this.worldHeight = worldHeight;
         this.size = 5; // Smaller food size
-        this.mass = 1; // Each food = 1 mass
         this.active = true;
         this.respawnTime = 0;
         // New random position on initial spawn

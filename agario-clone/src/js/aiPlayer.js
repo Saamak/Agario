@@ -1,25 +1,56 @@
 import Player from './player.js';
 
 class AIPlayer extends Player {
-    constructor(x, y, initialSize) {
+    static AI_MAX_SIZE = 500; // Smaller max size than player
+    static AI_MIN_SIZE = 20; // New minimum size constant
+    static names = [];
+
+    constructor(x, y, initialSize, nickname = 'AI') {
         super(x, y, initialSize);
         this.targetX = x;
         this.targetY = y;
-        this.updateTargetInterval = 500;
+        this.updateTargetInterval = 100;
         this.lastUpdate = 0;
         this.speed = 3;
+        this.size = Math.min(initialSize, AIPlayer.AI_MAX_SIZE);
+        this.nickname = this.getRandomName(); // Assign random name
+        this.color = this.getRandomColor(); // Assign random color
+    }
+
+    static async loadNames() {
+        const response = await fetch('js/names.json');
+        AIPlayer.names = await response.json();
+    }
+
+    getRandomName() {
+        if (AIPlayer.names.length === 0) return 'AI';
+        return AIPlayer.names[Math.floor(Math.random() * AIPlayer.names.length)];
+    }
+
+    getRandomColor() {
+        const colors = ['blue', 'green', 'pink', 'black', 'orange'];
+        return colors[Math.floor(Math.random() * colors.length)];
     }
 
     draw(ctx) {
-        // Draw AI circle with different color
+        // Draw AI circle with random color
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'red'; // Different color for AI
+        ctx.fillStyle = this.color; // Use random color
         ctx.fill();
         ctx.closePath();
 
-        // Reuse score display from parent class
-        super.draw(ctx);
+        // Draw nickname inside AI cell, just above the score
+        ctx.fillStyle = 'white';
+        ctx.font = `${Math.max(12, this.size/3)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const nicknameOffset = this.size / 3; // Adjust this value to change position
+        ctx.fillText(this.nickname, this.x, this.y - nicknameOffset);
+
+        // Draw score below nickname
+        const scoreOffset = this.size / 6; // Adjust this value to change position
+        ctx.fillText(this.score.toString(), this.x, this.y + scoreOffset);
     }
 
     updateTarget(foods, time, player) {
@@ -30,7 +61,7 @@ class AIPlayer extends Player {
             const dx = player.x - this.x;
             const dy = player.y - this.y;
             const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
-            const dangerRadius = player.size * 3; // Detection radius
+            const dangerRadius = player.size * 2; // Detection radius
             
             if (distanceToPlayer < dangerRadius && player.size > this.size) {
                 // Flee from player
@@ -82,15 +113,19 @@ class AIPlayer extends Player {
 
     addScore(points) {
         const roundedPoints = Math.floor(points);
-        this.score = Math.min(this.score + roundedPoints, Player.MAX_SIZE);
-        this.size = Math.min(this.size + (roundedPoints * 0.3), Player.MAX_SIZE);
+        this.score = Math.min(this.score + roundedPoints, AIPlayer.AI_MAX_SIZE);
+        this.size = Math.max(Math.min(Math.sqrt(this.score) * 10, AIPlayer.AI_MAX_SIZE), AIPlayer.AI_MIN_SIZE);
     }
 
-    grow(amount) {
-        const roundedAmount = Math.floor(amount);
-        const newSize = Math.min(this.size + (roundedAmount * 0.3), Player.MAX_SIZE);
-        this.size = newSize;
-        this.score = Math.floor(this.score + roundedAmount);
+    updateSize() {
+        this.size = Math.max(Math.min(Math.sqrt(this.score) * 10, AIPlayer.AI_MAX_SIZE), AIPlayer.AI_MIN_SIZE);
+    }
+
+    reduceSize(amount) {
+        // Reduce score first
+        this.score = Math.max(this.score - amount, AIPlayer.AI_MIN_SIZE);
+        // Update size based on new score
+        this.size = Math.max(Math.sqrt(this.score) * 10, AIPlayer.AI_MIN_SIZE);
     }
 }
 

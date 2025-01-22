@@ -11,10 +11,41 @@
             height: 100vh;
         }
         body { margin: 0; }
+        #menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .menu-button {
+            padding: 20px;
+            margin: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .menu-input {
+            padding: 10px;
+            margin: 10px;
+            font-size: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <script type="module" src="js/game.js"></script>
+    <div id="menu">
+        <input type="text" id="nicknameInput" class="menu-input" placeholder="Enter your nickname">
+        <button class="menu-button" id="singlePlayerButton">1 Joueur</button>
+        <button class="menu-button" id="multiPlayerButton">2 Joueurs</button>
+        <button class="menu-button" id="customSkinButton">Skin Custom</button>
+    </div>
+    <canvas id="gameCanvas" style="display: none;"></canvas>
+    <script type="module" src="js/menu.js"></script>
 </body>
 </html>
