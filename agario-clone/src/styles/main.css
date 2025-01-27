@@ -1,1 +1,86 @@
-/* This file is intentionally left blank. */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.game-title {
+    font-size: 100px;
+    margin-bottom: 20px;
+    color: #333;
+    font-family: 'Arial', sans-serif; /* Change font family */
+    animation: fadeIn 2s ease-in-out; /* Apply the animation */
+}
+
+.skin-selection {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.skins-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.skin-option {
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    object-fit: cover;
+}
+
+.skin-option:hover {
+    transform: scale(1.1);
+}
+
+.skin-option.selected {
+    border-color: #007BFF;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+canvas { 
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
+
+body { 
+    margin: 0; 
+}
+
+#menu, #skinMenu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.menu-button {
+    padding: 20px;
+    margin: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.menu-input {
+    padding: 10px;
+    margin: 10px;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#skinMenu {
+    display: none; /* Hide the skin menu initially */
+}

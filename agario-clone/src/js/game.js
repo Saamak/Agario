@@ -6,7 +6,7 @@ import CameraManager from './managers/CameraManager.js';
 import CollisionManager from './managers/CollisionManager.js';
 
 class Game {
-    constructor(playerCount, nickname) {
+    constructor(playerCount, nickname, skin) {
         // Canvas setup
         this.canvas = document.getElementById('gameCanvas');
         if (!this.canvas) {
@@ -27,7 +27,7 @@ class Game {
 
         // Load AI names and initialize game elements
         AIPlayer.loadNames().then(() => {
-            this.initializeGameElements(playerCount, nickname);
+            this.initializeGameElements(playerCount, nickname, skin);
             
             // Managers
             this.cameraManager = new CameraManager(this.canvas, this.worldWidth, this.worldHeight);
@@ -39,9 +39,9 @@ class Game {
         });
     }
 
-    initializeGameElements(playerCount, nickname) {
+    initializeGameElements(playerCount, nickname, skin) {
         // Player
-        this.player = new Player(this.worldWidth/2, this.worldHeight/2, 100, nickname);
+        this.player = new Player(this.worldWidth / 2, this.worldHeight / 2, 100, nickname, skin);
         
         // Food
         const NUM_FOODS = 1000;

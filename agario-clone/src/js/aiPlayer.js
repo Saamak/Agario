@@ -18,7 +18,7 @@ class AIPlayer extends Player {
     }
 
     static async loadNames() {
-        const response = await fetch('js/names.json');
+        const response = await fetch('../names.json');
         AIPlayer.names = await response.json();
     }
 

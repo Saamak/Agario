@@ -3,7 +3,7 @@ import Projectile from './projectile.js';
 class Player {
     static MAX_SIZE = 1000; // Static property for all players including AI
 
-    constructor(x, y, size, nickname) {
+    constructor(x, y, size, nickname, skin) {
         this.x = x;
         this.y = y;
         this.size = Math.min(size, Player.MAX_SIZE);
@@ -14,6 +14,7 @@ class Player {
         this.maxSpeed = 4;
         this.score = this.size;
         this.nickname = nickname; // Add nickname property
+        this.skin = skin; // Add skin property
         this.buffEndTime = 0;
         this.hasBuff = false;
         this.buffDuration = 0;
@@ -25,6 +26,18 @@ class Player {
         this.lastShootTime = 0;
         this.projectileSpeed = 15;
         this.projectileSize = 10;
+
+        // Load the skin image
+        if (this.skin) {
+            this.skinImage = new Image();
+            this.skinImage.src = this.skin;
+            this.skinImage.onload = () => {
+                console.log('Player skin loaded successfully');
+            };
+            this.skinImage.onerror = () => {
+                console.error('Failed to load player skin');
+            };
+        }
     }
 
     move(dx, dy, distance) {
@@ -39,12 +52,28 @@ class Player {
     }
 
     draw(context) {
-        // Draw player circle
-        context.beginPath();
-        context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        context.fillStyle = 'green';
-        context.fill();
-        context.closePath();
+        if (this.skin && this.skinImage && this.skinImage.complete) {
+            // Draw skin image
+            context.save();
+            context.beginPath();
+            context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            context.clip();
+            context.drawImage(
+                this.skinImage, 
+                this.x - this.size, 
+                this.y - this.size, 
+                this.size * 2, 
+                this.size * 2
+            );
+            context.restore();
+        } else {
+            // Fallback to default circle
+            context.beginPath();
+            context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            context.fillStyle = 'green';
+            context.fill();
+            context.closePath();
+        }
 
         // Draw cooldown bar if buff is active
         if (this.hasBuff) {
@@ -74,10 +103,11 @@ class Player {
 
         // Draw score
         context.fillStyle = 'white';
-        context.font = `${Math.max(12, this.size/3)}px Arial`;
+        context.font = `${Math.max(12, this.size / 3)}px Arial`;
         context.textAlign = 'center';
         context.textBaseline = 'middle'; 
         context.fillText(this.score.toString(), this.x, this.y);
+        const scoreOffset = 20;
 
         // Draw nickname above score with adjustable offset
         const nicknameOffset = this.size - 70; // Adjust this value to change position
