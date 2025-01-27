@@ -70,18 +70,33 @@ export default class CollisionManager {
     }
 
     checkPlayerAICollisions() {
+        // First check if player gets eaten
+        this.game.aiPlayers.forEach(ai => {
+            const dx = this.game.player.x - ai.x;
+            const dy = this.game.player.y - ai.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < Math.max(this.game.player.size, ai.size)) {
+                // AI needs 20% size advantage to eat player
+                if (ai.size > this.game.player.size * 1.2) {
+                    // AI gets 80% of player's score
+                    ai.addScore(this.game.player.score * 0.8);
+                    // Reset player
+                    this.resetPlayer();
+                    return;
+                }
+            }
+        });
+
+        // Then check if player eats AIs (existing logic)
         this.game.aiPlayers = this.game.aiPlayers.filter(ai => {
             const dx = this.game.player.x - ai.x;
             const dy = this.game.player.y - ai.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance < Math.max(this.game.player.size, ai.size)) {
-                // Need 20% size advantage to eat
                 if (this.game.player.size > ai.size * 1.2) {
-                    // Get 80% of victim's score
-                    const gainedSize = Math.floor(ai.size * 0.5);
                     this.game.player.addScore(ai.score);
-                    
                     this.game.deadAIs.push({
                         size: 20,
                         respawnTime: performance.now() + this.game.AI_RESPAWN_TIME
@@ -91,6 +106,18 @@ export default class CollisionManager {
             }
             return true;
         });
+    }
+
+    resetPlayer() {
+        // Show menu and hide canvas
+        document.getElementById('menu').style.display = 'flex';
+        document.getElementById('gameCanvas').style.display = 'none';
+        
+        // Reset nickname input
+        document.getElementById('nicknameInput').value = '';
+        
+        // Stop game loop by calling parent game's stop method
+        this.game.stop();
     }
 
     checkAICollisions() {

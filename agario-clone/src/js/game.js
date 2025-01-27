@@ -37,11 +37,13 @@ class Game {
             this.setupEventListeners();
             this.gameLoop();
         });
+
+        this.isRunning = true;
     }
 
     initializeGameElements(playerCount, nickname, skin) {
         // Player
-        this.player = new Player(this.worldWidth / 2, this.worldHeight / 2, 100, nickname, skin);
+        this.player = new Player(this.worldWidth / 2, this.worldHeight / 2, 20, nickname, skin);
         
         // Food
         const NUM_FOODS = 1000;
@@ -152,7 +154,7 @@ class Game {
     }
 
     initAIPlayers() {
-        const NUM_AI_PLAYERS = 150;
+        const NUM_AI_PLAYERS = 40;
         const MIN_SIZE = 15;
         const MAX_SIZE = 50;
 
@@ -184,7 +186,13 @@ class Game {
         });
     }
 
+    stop() {
+        this.isRunning = false;
+    }
+
     gameLoop() {
+        if (!this.isRunning) return;
+        
         this.update();
         this.draw();
         requestAnimationFrame(() => this.gameLoop());

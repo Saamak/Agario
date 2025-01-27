@@ -107,10 +107,9 @@ class Player {
         context.textAlign = 'center';
         context.textBaseline = 'middle'; 
         context.fillText(this.score.toString(), this.x, this.y);
-        const scoreOffset = 20;
 
         // Draw nickname above score with adjustable offset
-        const nicknameOffset = this.size - 70; // Adjust this value to change position
+        const nicknameOffset = this.size - 60; // Adjust this value to change position
         context.fillText(this.nickname, this.x, this.y - nicknameOffset);
     }
 
